@@ -4,7 +4,6 @@ project(ratio_consensus)
 
 find_package(catkin REQUIRED COMPONENTS
   std_msgs
-  geometry_msgs
   rospy
   message_generation
 )
@@ -17,17 +16,21 @@ include_directories(
 
 add_message_files(
 	FILES
-  yzMsg.msg
+	TwoScalarMsg.msg
+	AckMsg.msg
+	rto_derp_msg.msg
 	)
 
 
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+
+)
 
 
 catkin_package(
+
    CATKIN_DEPENDS message_runtime
 )
 
