@@ -114,10 +114,21 @@ class Slave:
           for neighbor in self.one_hop_neighbors:
               y_sum+=msg.y[neighbor]
               z_sum+=msg.z[neighbor]
+
+          # if msg.time==0:
+          #   self.state.y=1./3.*(msg.y[self.ident]+y_sum)
+          #   self.state.z=1./3.*(msg.z[self.ident]+z_sum)
+          #   self.state.time=msg.time+1
+          # else:
+          # if msg.time==1:
+          #   print("here")
+          #   print(msg.y[self.ident])
+            # self.state.y=msg.y[self.ident]
+            # self.state.z=msg.z[self.ident]
           self.state.y=1./3.*(self.state.y+y_sum)
-          self.state.z=1./3.*(self.state.P+z_sum)
+          self.state.z=1./3.*(self.state.z+z_sum)
           self.state.time=msg.time+1
-          self.state.P=self.gu+(self.y/self.z)*(self.go-self.gu)
+          self.state.P=self.gu+(self.state.y/self.state.z)*(self.go-self.gu)
 
 
         def update_y(self):

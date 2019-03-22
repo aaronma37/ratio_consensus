@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import csv
 import time
 import rospy
 import sys
@@ -16,6 +17,38 @@ rospy.init_node('Master', anonymous=True)
 all_info_pub=rospy.Publisher('/all_info', AllInfoMsg, queue_size=1)
 outer_loop_pub =rospy.Publisher('/outer_loop', Int32, queue_size=1)
 
+val=[]
+
+if rospy.has_param("/dataset"):
+  dataset_filename=rospy.get_param("/dataset")
+else:
+  print("Set data_set name")
+  exit()
+
+with open(dataset_filename) as csv_file:
+
+  csv_reader = csv.reader(csv_file, delimiter=',')
+  line_count = 0
+  for row in csv_reader:
+      val.append(float(row[0]))
+      line_count+=1
+  max_iter=line_count
+
+
+gu=[]
+go=[]
+
+with open('/home/aaron/catkin_ws/src/ratio_consensus/gu.csv') as csv_file:
+  csv_reader = csv.reader(csv_file, delimiter=',')
+  for row in csv_reader:
+    for i in range(9):
+      gu.append(float(row[i]))
+with open('/home/aaron/catkin_ws/src/ratio_consensus/go.csv') as csv_file:
+  csv_reader = csv.reader(csv_file, delimiter=',')
+  for row in csv_reader:
+    for i in range(9):
+      go.append(float(row[i]))
+
 class Master:
 	def __init__(self):
             self.slaves={}
@@ -30,21 +63,20 @@ class Master:
             for s in self.slaves.keys():
               rospy.Subscriber(s+'/ack', RTOMsg, self.sentCB)
 
+            self.outer_iteration=Int32()
+            self.outer_iteration.data=0
             self.all_info_msg=AllInfoMsg()
             self.reset_all_info()
             time.sleep(2)
             # self.pub()
             self.reset_all_info()
             self.iterate()
-            self.outer_iteration=Int32()
-            self.outer_iteration.data=0
 
         def sentCB(self,msg):
             if msg.time==self.all_info_msg.time:
               self.all_info_msg.z[msg.id]=msg.z
               self.all_info_msg.P[msg.id]=msg.P
               self.all_info_msg.y[msg.id]=msg.y
-              self.all_info_msg.lam[msg.id]=msg.lam
               self.all_info_msg.recv[msg.id]=True
               try:
                 self.slaves[msg.id]=True
@@ -63,18 +95,21 @@ class Master:
             self.all_info_msg.z=[0.0]*9
             self.all_info_msg.P=[0.0]*9
             self.all_info_msg.y=[0.0]*9
-            self.all_info_msg.lam=[0.0]*9
             self.all_info_msg.recv=[False]*9
+            for i in range(9):
+              if i==0:
+                self.all_info_msg.y[i]=val[self.outer_iteration.data]-gu[i]
+                print(self.all_info_msg.y)
+              else:
+                self.all_info_msg.y[i]=-gu[i]
+              self.all_info_msg.z[i]=go[i]-gu[i]
 
         def iterate(self):
             print('------------------------')
             print('time',self.all_info_msg.time)
-            print('z: ',self.all_info_msg.z[0])
+            print('z: ',self.all_info_msg.z)
             print('y: ',self.all_info_msg.y)
-            print('lam: ',self.all_info_msg.lam[0])
             print('sum: ',sum(self.all_info_msg.P))
-            # self.verify(self.all_info_msg)
-            # time.sleep(.01)
             temp_msg=deepcopy(self.all_info_msg)
             self.reset_all_info()
             self.pub(temp_msg)
@@ -87,9 +122,10 @@ class Master:
         def outer_loop_inc(self):
           self.all_info_msg.time=0
           outer_loop_pub.publish(self.outer_iteration)
+          self.reset_all_info()
+          temp_msg=deepcopy(self.all_info_msg)
           self.iterate()
-          # self.pub(temp_msg)
-          # self.reset_all_info()
+          self.pub(temp_msg)
 
         def run(self):
             now=time.time()
@@ -112,12 +148,4 @@ def main(args):
 
 if __name__ == '__main__':
 	main(sys.argv)
-
-
-
-
-
-
-
-
 

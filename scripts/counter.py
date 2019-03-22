@@ -2,7 +2,7 @@ import csv
 val=[]
 for i in range(9):
   val.append([])
-  with open('/home/aaron/catkin_ws/src/dana/scripts/'+str(i)+'.csv') as     csv_file:
+  with open('/home/aaron/catkin_ws/src/ratio_consensus/scripts/'+str(i)+'.csv') as     csv_file:
     csv_reader = csv.reader(csv_file, delimiter='\n')
     line_count = 0
     for row in csv_reader:
