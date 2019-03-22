@@ -16,9 +16,9 @@ include_directories(
 
 add_message_files(
 	FILES
-	TwoScalarMsg.msg
 	AckMsg.msg
-	rto_derp_msg.msg
+	ratio_consensus_msg.msg
+	all_info.msg
 	)
 
 

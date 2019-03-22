@@ -2,7 +2,7 @@
 <package format="2">
   <name>ratio_consensus</name>
   <version>0.0.0</version>
-  <description>The ratio_consensus package</description>
+  <description>The rto_derp package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
